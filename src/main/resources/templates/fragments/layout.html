@@ -1,7 +1,6 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 
-<!-- ========== NAVBAR FRAGMENT ========== -->
 <nav th:fragment="navbar" class="navbar">
     <div class="nav-brand">
         <a th:href="@{/}">StayEasy</a>
@@ -10,24 +9,25 @@
         <a th:href="@{/properties}">Browse</a>
         <a th:href="@{/about}">About</a>
 
-        <th:block th:if="${session.userId != null}">
+        <th:block sec:authorize="isAuthenticated()">
             <a th:href="@{/properties/add}">List Property</a>
             <a th:href="@{/reservations/my}">My Reservations</a>
             <a th:href="@{/reservations/host}">Host Dashboard</a>
             <span style="color:#BFB0A3;">|</span>
             <span style="color:#8B7B6B; font-style:italic; font-family:'Cormorant Garamond',serif;"
-                  th:text="${session.username}"></span>
-            <a th:href="@{/auth/logout}" class="btn btn-outline">Logout</a>
+                  sec:authentication="name"></span>
+            <form th:action="@{/auth/logout}" method="post" style="display:inline;">
+                <button type="submit" class="btn btn-outline">Logout</button>
+            </form>
         </th:block>
 
-        <th:block th:unless="${session.userId != null}">
+        <th:block sec:authorize="isAnonymous()">
             <a th:href="@{/auth/login}" class="btn btn-outline">Login</a>
             <a th:href="@{/auth/register}" class="btn btn-primary">Register</a>
         </th:block>
     </div>
 </nav>
 
-<!-- ========== FOOTER FRAGMENT ========== -->
 <footer th:fragment="footer" class="footer">
     <p>&copy; 2026 StayEasy. All rights reserved.</p>
     <p style="margin-top:0.3rem; font-size:0.78rem; opacity:0.6; font-family:'Cormorant Garamond',serif; letter-spacing:0.06em;">
@@ -35,7 +35,6 @@
     </p>
 </footer>
 
-<!-- ========== HEAD FRAGMENT ========== -->
 <th:block th:fragment="head(title)">
     <meta charset="UTF-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
