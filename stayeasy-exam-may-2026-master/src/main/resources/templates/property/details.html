@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <th:block th:replace="~{fragments/layout :: head('Property Details')}"/>
 </head>
@@ -54,26 +54,26 @@
             </p>
 
             <div style="margin-top:2rem; display:flex; gap:1rem; flex-wrap:wrap;">
-                <a th:if="${session.userId != null}"
-                   th:href="@{/reservations/create/{id}(id=${property.id})}"
-                   class="btn btn-primary btn-large">Book Now</a>
+                <th:block sec:authorize="isAuthenticated()">
+                    <a th:href="@{/reservations/create/{id}(id=${property.id})}"
+                       class="btn btn-primary btn-large">Book Now</a>
 
-                <a th:unless="${session.userId != null}"
+                    <th:block th:if="${#authentication.principal.id == property.host.id}">
+                        <a th:href="@{/properties/{id}/edit(id=${property.id})}" class="btn btn-outline">Edit</a>
+                        <form th:action="@{/properties/{id}/delete(id=${property.id})}" method="post" style="display:inline;">
+                            <button type="submit" class="btn btn-danger"
+                                    onclick="return confirm('Are you sure you want to delete this property?')">Delete</button>
+                        </form>
+                    </th:block>
+                </th:block>
+
+                <a sec:authorize="isAnonymous()"
                    th:href="@{/auth/login}"
                    class="btn btn-primary btn-large">Login to Book</a>
-
-                <th:block th:if="${session.userId != null and session.userId == property.host.id.toString()}">
-                    <a th:href="@{/properties/{id}/edit(id=${property.id})}" class="btn btn-outline">Edit</a>
-                    <form th:action="@{/properties/{id}/delete(id=${property.id})}" method="post" style="display:inline;">
-                        <button type="submit" class="btn btn-danger"
-                                onclick="return confirm('Are you sure you want to delete this property?')">Delete</button>
-                    </form>
-                </th:block>
             </div>
         </div>
     </div>
 
-    <!-- REVIEWS SECTION -->
     <div style="margin-top:2.5rem;">
         <h2 style="font-family:'Cormorant Garamond',serif; font-size:1.8rem; font-weight:400; color:#3D3530; margin-bottom:1rem;">
             Reviews (<span th:text="${#lists.size(reviews)}"></span>)
@@ -102,7 +102,8 @@
                     <span style="color:#BFB0A3; font-size:0.82rem; margin-left:0.5rem;"
                           th:text="${#temporals.format(review.createdOn, 'dd MMM yyyy')}"></span>
                 </div>
-                <form th:if="${session.userId != null and session.userId == review.author.id.toString()}"
+                <form sec:authorize="isAuthenticated()"
+                      th:if="${#authentication.principal.id == review.author.id}"
                       th:action="@{/reviews/delete/{id}(id=${review.id})}" method="post">
                     <button type="submit" class="btn btn-danger"
                             style="font-size:0.78rem; padding:0.3rem 0.8rem;"
@@ -112,39 +113,41 @@
             <p th:text="${review.content}" style="margin-top:0.8rem; color:#8B7B6B; line-height:1.7; font-size:0.93rem;"></p>
         </div>
 
-        <div th:if="${session.userId != null and !userAlreadyReviewed}"
-             style="background:#FDFAF6; border-radius:16px; padding:1.5rem; border:1px solid rgba(201,150,122,0.15); margin-top:1rem;">
-            <h3 style="font-family:'Cormorant Garamond',serif; font-size:1.3rem; font-weight:400; margin-bottom:1rem; color:#3D3530;">Leave a Review</h3>
-            <form th:action="@{/reviews/create/{id}(id=${property.id})}"
-                  th:object="${reviewData}" method="post">
-                <div class="form-group">
-                    <label for="rating">Rating <span style="color:#C9967A;">*</span></label>
-                    <select id="rating" th:field="*{rating}">
-                        <option value="0">— Select rating —</option>
-                        <option value="1">1 — Poor</option>
-                        <option value="2">2 — Fair</option>
-                        <option value="3">3 — Good</option>
-                        <option value="4">4 — Very Good</option>
-                        <option value="5">5 — Excellent</option>
-                    </select>
-                    <span class="field-error" th:if="${#fields.hasErrors('rating')}" th:errors="*{rating}"></span>
-                </div>
-                <div class="form-group">
-                    <label for="content">Your Review <span style="color:#C9967A;">*</span></label>
-                    <textarea id="content" th:field="*{content}"
-                              placeholder="Share your experience..."></textarea>
-                    <span class="field-error" th:if="${#fields.hasErrors('content')}" th:errors="*{content}"></span>
-                </div>
-                <button type="submit" class="btn btn-primary">Submit Review</button>
-            </form>
-        </div>
+        <th:block sec:authorize="isAuthenticated()">
+            <div th:if="${!userAlreadyReviewed}"
+                 style="background:#FDFAF6; border-radius:16px; padding:1.5rem; border:1px solid rgba(201,150,122,0.15); margin-top:1rem;">
+                <h3 style="font-family:'Cormorant Garamond',serif; font-size:1.3rem; font-weight:400; margin-bottom:1rem; color:#3D3530;">Leave a Review</h3>
+                <form th:action="@{/reviews/create/{id}(id=${property.id})}"
+                      th:object="${reviewData}" method="post">
+                    <div class="form-group">
+                        <label for="rating">Rating <span style="color:#C9967A;">*</span></label>
+                        <select id="rating" th:field="*{rating}">
+                            <option value="0">— Select rating —</option>
+                            <option value="1">1 — Poor</option>
+                            <option value="2">2 — Fair</option>
+                            <option value="3">3 — Good</option>
+                            <option value="4">4 — Very Good</option>
+                            <option value="5">5 — Excellent</option>
+                        </select>
+                        <span class="field-error" th:if="${#fields.hasErrors('rating')}" th:errors="*{rating}"></span>
+                    </div>
+                    <div class="form-group">
+                        <label for="content">Your Review <span style="color:#C9967A;">*</span></label>
+                        <textarea id="content" th:field="*{content}"
+                                  placeholder="Share your experience..."></textarea>
+                        <span class="field-error" th:if="${#fields.hasErrors('content')}" th:errors="*{content}"></span>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Submit Review</button>
+                </form>
+            </div>
 
-        <div th:if="${session.userId != null and userAlreadyReviewed}"
-             style="background:#F7F2EC; border-radius:10px; padding:1rem; color:#8B7B6B; margin-top:1rem; font-size:0.9rem;">
-            You have already reviewed this property.
-        </div>
+            <div th:if="${userAlreadyReviewed}"
+                 style="background:#F7F2EC; border-radius:10px; padding:1rem; color:#8B7B6B; margin-top:1rem; font-size:0.9rem;">
+                You have already reviewed this property.
+            </div>
+        </th:block>
 
-        <div th:unless="${session.userId != null}"
+        <div sec:authorize="isAnonymous()"
              style="background:#F7F2EC; border-radius:10px; padding:1rem; text-align:center; margin-top:1rem; font-size:0.9rem; color:#8B7B6B;">
             <a th:href="@{/auth/login}" style="color:#C9967A;">Login</a> to leave a review.
         </div>
