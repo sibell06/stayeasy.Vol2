@@ -12,8 +12,6 @@ public class ReviewBindingModel {
     private String content;
     private int rating;
 
-    @Min(value = 1, message = "Rate must be at least 1")
-    @Max(value = 5, message = "Rating cannot exceed 5")
     public String getContent() {
         return content;
     }
@@ -22,6 +20,8 @@ public class ReviewBindingModel {
         this.content = content;
     }
 
+    @Min(value = 1, message = "Rate must be at least 1")
+    @Max(value = 5, message = "Rating cannot exceed 5")
     public int getRating() {
         return rating;
     }
