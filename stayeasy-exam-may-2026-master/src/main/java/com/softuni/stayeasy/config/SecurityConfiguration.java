@@ -35,11 +35,17 @@ public class SecurityConfiguration {
         http
                 .authenticationProvider(authenticationProvider())
                 .authorizeHttpRequests(authorize -> authorize
+                        .requestMatchers("/properties/add").hasAnyRole("HOST", "ADMIN")
+                        .requestMatchers("/properties/{id}/edit", "/properties/{id}/delete").hasAnyRole("HOST", "ADMIN")
+                        .requestMatchers("/reservations/create/**").hasRole("RENTER")
+                        .requestMatchers("/reservations/host", "/reservations/{id}/approve", "/reservations/{id}/reject").hasAnyRole("HOST", "ADMIN")
                         .requestMatchers(HttpMethod.GET, "/", "/about", "/properties", "/properties/{id}").permitAll()
                         .requestMatchers("/auth/register", "/auth/login").permitAll()
                         .requestMatchers("/css/**", "/js/**", "/images/**").permitAll()
                         .anyRequest().authenticated()
                 )
+                .exceptionHandling(exceptions -> exceptions
+                        .accessDeniedPage("/access-denied"))
                 .formLogin(form -> form
                         .loginPage("/auth/login")
                         .loginProcessingUrl("/auth/login")
@@ -49,7 +55,9 @@ public class SecurityConfiguration {
                         .failureUrl("/auth/login?error")
                         .permitAll()
                 )
-                .logout(logout -> logout.permitAll());
+                .logout(logout -> logout
+                        .logoutUrl("/auth/logout")
+                        .permitAll());
 
         return http.build();
     }
