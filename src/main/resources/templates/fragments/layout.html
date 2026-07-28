@@ -14,8 +14,8 @@
             <a th:href="@{/reservations/my}">My Reservations</a>
             <a th:href="@{/reservations/host}">Host Dashboard</a>
             <span style="color:#BFB0A3;">|</span>
-            <span style="color:#8B7B6B; font-style:italic; font-family:'Cormorant Garamond',serif;"
-                  sec:authentication="name"></span>
+            <a th:href="@{/profile}" style="color:#8B7B6B; font-style:italic; font-family:'Cormorant Garamond',serif; text-decoration:none;"
+               sec:authentication="name"></a>
             <form th:action="@{/auth/logout}" method="post" style="display:inline;">
                 <button type="submit" class="btn btn-outline">Logout</button>
             </form>
