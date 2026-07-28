@@ -4,7 +4,10 @@ import com.softuni.stayeasy.exception.PropertyNotFoundException;
 import com.softuni.stayeasy.model.entity.property.Property;
 import com.softuni.stayeasy.model.entity.user.User;
 import com.softuni.stayeasy.repository.property.PropertyRepository;
+import com.softuni.stayeasy.repository.reservation.ReservationRepository;
+import com.softuni.stayeasy.repository.review.ReviewRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -15,9 +18,15 @@ import java.util.UUID;
 public class PropertyServiceImpl implements PropertyService {
 
     private final PropertyRepository propertyRepository;
+    private final ReviewRepository reviewRepository;
+    private final ReservationRepository reservationRepository;
 
-    public PropertyServiceImpl(PropertyRepository propertyRepository) {
+    public PropertyServiceImpl(PropertyRepository propertyRepository,
+                               ReviewRepository reviewRepository,
+                               ReservationRepository reservationRepository) {
         this.propertyRepository = propertyRepository;
+        this.reviewRepository = reviewRepository;
+        this.reservationRepository = reservationRepository;
     }
 
     @Override
@@ -35,11 +44,14 @@ public class PropertyServiceImpl implements PropertyService {
     }
 
     @Override
+    @Transactional
     public void deleteProperty(UUID id) {
-        if (!propertyRepository.existsById(id)) {
-            throw new PropertyNotFoundException("Property with id " + id + " not found");
-        }
-        propertyRepository.deleteById(id);
+        Property property = propertyRepository.findById(id)
+                .orElseThrow(() -> new PropertyNotFoundException("Property with id " + id + " not found"));
+
+        reviewRepository.deleteAll(reviewRepository.findAllByProperty(property));
+        reservationRepository.deleteAll(reservationRepository.findAllByProperty(property));
+        propertyRepository.delete(property);
     }
 
     @Override
