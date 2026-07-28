@@ -4,11 +4,11 @@ import com.softuni.stayeasy.model.dto.review.ReviewBindingModel;
 import com.softuni.stayeasy.model.entity.property.Property;
 import com.softuni.stayeasy.model.entity.review.Review;
 import com.softuni.stayeasy.model.entity.user.User;
+import com.softuni.stayeasy.security.UserPrincipal;
 import com.softuni.stayeasy.service.property.PropertyService;
 import com.softuni.stayeasy.service.review.ReviewService;
-import com.softuni.stayeasy.service.user.UserService;
-import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -26,28 +26,18 @@ public class ReviewController {
 
     private final ReviewService reviewService;
     private final PropertyService propertyService;
-    private final UserService userService;
 
-    public ReviewController(ReviewService reviewService,
-                            PropertyService propertyService,
-                            UserService userService) {
+    public ReviewController(ReviewService reviewService, PropertyService propertyService) {
         this.reviewService = reviewService;
         this.propertyService = propertyService;
-        this.userService = userService;
     }
-
-    // --- CREATE ---
 
     @PostMapping("/create/{propertyId}")
     public String create(@PathVariable UUID propertyId,
                          @Valid @ModelAttribute("reviewData") ReviewBindingModel reviewData,
                          BindingResult bindingResult,
                          Model model,
-                         HttpSession session) {
-
-        if (session.getAttribute("userId") == null) {
-            return "redirect:/auth/login";
-        }
+                         @AuthenticationPrincipal UserPrincipal principal) {
 
         Optional<Property> propertyOpt = propertyService.findById(propertyId);
         if (propertyOpt.isEmpty()) {
@@ -55,13 +45,7 @@ public class ReviewController {
         }
 
         Property property = propertyOpt.get();
-        UUID userId = UUID.fromString((String) session.getAttribute("userId"));
-        Optional<User> authorOpt = userService.findById(userId);
-        if (authorOpt.isEmpty()) {
-            return "redirect:/auth/login";
-        }
-
-        User author = authorOpt.get();
+        User author = principal.getUser();
 
         if (bindingResult.hasErrors()) {
             model.addAttribute("property", property);
@@ -71,7 +55,6 @@ public class ReviewController {
             return "property/details";
         }
 
-        // Prevent duplicate reviews
         if (reviewService.hasUserReviewedProperty(author, property)) {
             return "redirect:/properties/" + propertyId + "?alreadyReviewed=true";
         }
@@ -87,23 +70,14 @@ public class ReviewController {
         return "redirect:/properties/" + propertyId;
     }
 
-    // --- DELETE ---
-
     @PostMapping("/delete/{reviewId}")
-    public String delete(@PathVariable UUID reviewId,
-                         HttpSession session) {
-        if (session.getAttribute("userId") == null) {
-            return "redirect:/auth/login";
-        }
-
+    public String delete(@PathVariable UUID reviewId, @AuthenticationPrincipal UserPrincipal principal) {
         Optional<Review> reviewOpt = reviewService.findById(reviewId);
         if (reviewOpt.isEmpty()) {
             return "redirect:/properties";
         }
 
-        UUID userId = UUID.fromString((String) session.getAttribute("userId"));
-
-        if (!reviewOpt.get().getAuthor().getId().equals(userId)) {
+        if (!reviewOpt.get().getAuthor().getId().equals(principal.getId())) {
             return "redirect:/properties/" + reviewOpt.get().getProperty().getId();
         }
 
