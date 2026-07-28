@@ -4,6 +4,7 @@ import com.softuni.stayeasy.model.dto.property.PropertyBindingModel;
 import com.softuni.stayeasy.model.dto.review.ReviewBindingModel;
 import com.softuni.stayeasy.model.entity.property.Property;
 import com.softuni.stayeasy.model.entity.property.PropertyType;
+import com.softuni.stayeasy.model.entity.user.UserRole;
 import com.softuni.stayeasy.security.UserPrincipal;
 import com.softuni.stayeasy.service.property.PropertyService;
 import com.softuni.stayeasy.service.review.ReviewService;
@@ -109,8 +110,10 @@ public class PropertyController {
         }
 
         Property property = propertyOpt.get();
+        boolean isOwner = property.getHost().getId().equals(principal.getId());
+        boolean isAdmin = principal.getUser().getRole() == UserRole.ADMIN;
 
-        if (!property.getHost().getId().equals(principal.getId())) {
+        if (!isOwner && !isAdmin) {
             return "redirect:/properties";
         }
 
@@ -150,8 +153,10 @@ public class PropertyController {
         }
 
         Property property = propertyOpt.get();
+        boolean isOwner = property.getHost().getId().equals(principal.getId());
+        boolean isAdmin = principal.getUser().getRole() == UserRole.ADMIN;
 
-        if (!property.getHost().getId().equals(principal.getId())) {
+        if (!isOwner && !isAdmin) {
             return "redirect:/properties";
         }
 
@@ -178,7 +183,11 @@ public class PropertyController {
             return "redirect:/properties";
         }
 
-        if (!propertyOpt.get().getHost().getId().equals(principal.getId())) {
+        Property property = propertyOpt.get();
+        boolean isOwner = property.getHost().getId().equals(principal.getId());
+        boolean isAdmin = principal.getUser().getRole() == UserRole.ADMIN;
+
+        if (!isOwner && !isAdmin) {
             return "redirect:/properties";
         }
 

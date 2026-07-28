@@ -3,6 +3,7 @@ package com.softuni.stayeasy.web;
 import com.softuni.stayeasy.model.dto.reservation.ReservationBindingModel;
 import com.softuni.stayeasy.model.entity.property.Property;
 import com.softuni.stayeasy.model.entity.reservation.Reservation;
+import com.softuni.stayeasy.model.entity.user.UserRole;
 import com.softuni.stayeasy.security.UserPrincipal;
 import com.softuni.stayeasy.service.property.PropertyService;
 import com.softuni.stayeasy.service.reservation.ReservationService;
@@ -109,7 +110,10 @@ public class ReservationController {
             return "redirect:/reservations/my";
         }
 
-        if (!reservationOpt.get().getRenter().getId().equals(principal.getId())) {
+        boolean isOwner = reservationOpt.get().getRenter().getId().equals(principal.getId());
+        boolean isAdmin = principal.getUser().getRole() == UserRole.ADMIN;
+
+        if (!isOwner && !isAdmin) {
             return "redirect:/reservations/my";
         }
         reservationService.cancelReservation(id);
@@ -134,7 +138,10 @@ public class ReservationController {
             return "redirect:/reservations/host";
         }
 
-        if (!reservationOpt.get().getProperty().getHost().getId().equals(principal.getId())) {
+        boolean isOwner = reservationOpt.get().getProperty().getHost().getId().equals(principal.getId());
+        boolean isAdmin = principal.getUser().getRole() == UserRole.ADMIN;
+
+        if (!isOwner && !isAdmin) {
             return "redirect:/reservations/host";
         }
         reservationService.approveReservation(id);
@@ -148,7 +155,10 @@ public class ReservationController {
             return "redirect:/reservations/host";
         }
 
-        if (!reservationOpt.get().getProperty().getHost().getId().equals(principal.getId())) {
+        boolean isOwner = reservationOpt.get().getProperty().getHost().getId().equals(principal.getId());
+        boolean isAdmin = principal.getUser().getRole() == UserRole.ADMIN;
+
+        if (!isOwner && !isAdmin) {
             return "redirect:/reservations/host";
         }
         reservationService.rejectReservation(id);

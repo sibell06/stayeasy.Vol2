@@ -4,6 +4,7 @@ import com.softuni.stayeasy.model.dto.review.ReviewBindingModel;
 import com.softuni.stayeasy.model.entity.property.Property;
 import com.softuni.stayeasy.model.entity.review.Review;
 import com.softuni.stayeasy.model.entity.user.User;
+import com.softuni.stayeasy.model.entity.user.UserRole;
 import com.softuni.stayeasy.security.UserPrincipal;
 import com.softuni.stayeasy.service.property.PropertyService;
 import com.softuni.stayeasy.service.review.ReviewService;
@@ -77,7 +78,10 @@ public class ReviewController {
             return "redirect:/properties";
         }
 
-        if (!reviewOpt.get().getAuthor().getId().equals(principal.getId())) {
+        boolean isOwner = reviewOpt.get().getAuthor().getId().equals(principal.getId());
+        boolean isAdmin = principal.getUser().getRole() == UserRole.ADMIN;
+
+        if (!isOwner && !isAdmin) {
             return "redirect:/properties/" + reviewOpt.get().getProperty().getId();
         }
 
