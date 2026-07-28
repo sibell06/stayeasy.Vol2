@@ -35,6 +35,7 @@ public class SecurityConfiguration {
         http
                 .authenticationProvider(authenticationProvider())
                 .authorizeHttpRequests(authorize -> authorize
+                        .requestMatchers("/admin/**").hasRole("ADMIN")
                         .requestMatchers("/properties/add").hasAnyRole("HOST", "ADMIN")
                         .requestMatchers("/properties/{id}/edit", "/properties/{id}/delete").hasAnyRole("HOST", "ADMIN")
                         .requestMatchers("/reservations/create/**").hasRole("RENTER")
