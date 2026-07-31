@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <th:block th:replace="~{fragments/layout :: head('Manage Users')}"/>
+</head>
+<body>
+
+<th:block th:replace="~{fragments/layout :: navbar}"/>
+
+<main style="max-width:800px; margin:2rem auto; padding:0 1.5rem;">
+
+    <h1 style="font-family:'Cormorant Garamond',serif; font-size:2.4rem; font-weight:400; color:#3D3530; margin-bottom:1.5rem;">
+        Manage Users
+    </h1>
+
+    <table style="width:100%; border-collapse:collapse; background:#FDFAF6; border-radius:16px; overflow:hidden; border:1px solid rgba(201,150,122,0.15);">
+        <thead>
+        <tr style="background:#F7F2EC;">
+            <th style="text-align:left; padding:0.8rem 1rem; font-size:0.85rem; color:#8B7B6B;">Username</th>
+            <th style="text-align:left; padding:0.8rem 1rem; font-size:0.85rem; color:#8B7B6B;">Email</th>
+            <th style="text-align:left; padding:0.8rem 1rem; font-size:0.85rem; color:#8B7B6B;">Current Role</th>
+            <th style="text-align:left; padding:0.8rem 1rem; font-size:0.85rem; color:#8B7B6B;">Change Role</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="user : ${users}" style="border-top:1px solid rgba(201,150,122,0.1);">
+            <td style="padding:0.8rem 1rem;" th:text="${user.username}"></td>
+            <td style="padding:0.8rem 1rem;" th:text="${user.email}"></td>
+            <td style="padding:0.8rem 1rem;" th:text="${user.role}"></td>
+            <td style="padding:0.8rem 1rem;">
+                <form th:action="@{/admin/users/{id}/role(id=${user.id})}" method="post" style="display:flex; gap:0.5rem;">
+                    <select name="role">
+                        <option th:each="role : ${roles}"
+                                th:value="${role}"
+                                th:text="${role}"
+                                th:selected="${role == user.role}">
+                        </option>
+                    </select>
+                    <button type="submit" class="btn btn-outline" style="font-size:0.8rem; padding:0.3rem 0.9rem;">Update</button>
+                </form>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+
+</main>
+
+<th:block th:replace="~{fragments/layout :: footer}"/>
+
+</body>
+</html>

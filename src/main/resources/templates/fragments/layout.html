@@ -13,6 +13,7 @@
             <a th:href="@{/properties/add}">List Property</a>
             <a th:href="@{/reservations/my}">My Reservations</a>
             <a th:href="@{/reservations/host}">Host Dashboard</a>
+            <a th:href="@{/admin/users}" sec:authorize="hasRole('ADMIN')">Manage Users</a>
             <span style="color:#BFB0A3;">|</span>
             <a th:href="@{/profile}" style="color:#8B7B6B; font-style:italic; font-family:'Cormorant Garamond',serif; text-decoration:none;"
                sec:authentication="name"></a>
