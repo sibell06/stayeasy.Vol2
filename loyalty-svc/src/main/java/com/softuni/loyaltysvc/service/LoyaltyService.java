@@ -1,0 +1,87 @@
+package com.softuni.loyaltysvc.service;
+
+import com.softuni.loyaltysvc.model.LoyaltyAccount;
+import com.softuni.loyaltysvc.model.PointsTransaction;
+import com.softuni.loyaltysvc.repository.LoyaltyAccountRepository;
+import com.softuni.loyaltysvc.repository.PointsTransactionRepository;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDateTime;
+import java.util.UUID;
+
+@Service
+public class LoyaltyService {
+
+    private static final int POINTS_PER_NIGHT = 10;
+    private static final int POINTS_PER_DOLLAR_DISCOUNT = 10;
+
+    private final LoyaltyAccountRepository loyaltyAccountRepository;
+    private final PointsTransactionRepository pointsTransactionRepository;
+
+    public LoyaltyService(LoyaltyAccountRepository loyaltyAccountRepository,
+                          PointsTransactionRepository pointsTransactionRepository) {
+        this.loyaltyAccountRepository = loyaltyAccountRepository;
+        this.pointsTransactionRepository = pointsTransactionRepository;
+    }
+
+    public int getBalance(UUID userId) {
+        return getOrCreateAccount(userId).getPointsBalance();
+    }
+
+    @Transactional
+    public int awardPoints(UUID userId, int nights) {
+        LoyaltyAccount account = getOrCreateAccount(userId);
+
+        int pointsEarned = nights * POINTS_PER_NIGHT;
+        account.setPointsBalance(account.getPointsBalance() + pointsEarned);
+        account.setUpdatedOn(LocalDateTime.now());
+        loyaltyAccountRepository.save(account);
+
+        PointsTransaction transaction = PointsTransaction.builder()
+                .account(account)
+                .points(pointsEarned)
+                .reason("Stay completed: " + nights + " night(s)")
+                .createdOn(LocalDateTime.now())
+                .build();
+        pointsTransactionRepository.save(transaction);
+
+        return account.getPointsBalance();
+    }
+
+    @Transactional
+    public double redeemPoints(UUID userId, int pointsToRedeem) {
+        LoyaltyAccount account = getOrCreateAccount(userId);
+
+        if (pointsToRedeem <= 0 || pointsToRedeem > account.getPointsBalance()) {
+            throw new IllegalArgumentException("Invalid points amount to redeem");
+        }
+
+        account.setPointsBalance(account.getPointsBalance() - pointsToRedeem);
+        account.setUpdatedOn(LocalDateTime.now());
+        loyaltyAccountRepository.save(account);
+
+        PointsTransaction transaction = PointsTransaction.builder()
+                .account(account)
+                .points(-pointsToRedeem)
+                .reason("Redeemed for booking discount")
+                .createdOn(LocalDateTime.now())
+                .build();
+        pointsTransactionRepository.save(transaction);
+
+        return (double) pointsToRedeem / POINTS_PER_DOLLAR_DISCOUNT;
+    }
+
+    private LoyaltyAccount getOrCreateAccount(UUID userId) {
+        return loyaltyAccountRepository.findByUserId(userId)
+                .orElseGet(() -> {
+                    LoyaltyAccount newAccount = LoyaltyAccount.builder()
+                            .userId(userId)
+                            .pointsBalance(0)
+                            .createdOn(LocalDateTime.now())
+                            .updatedOn(LocalDateTime.now())
+                            .build();
+                    return loyaltyAccountRepository.save(newAccount);
+                });
+    }
+}
