@@ -1,7 +1,9 @@
 package com.softuni.stayeasy.service.user;
 
 import com.softuni.stayeasy.model.entity.user.User;
+import com.softuni.stayeasy.model.entity.user.UserRole;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -22,4 +24,8 @@ public interface UserService {
     boolean existsByEmail(String email);
 
     void updateUser(User user);
+
+    List<User> findAll();
+
+    void changeRole(UUID userId, UserRole newRole);
 }

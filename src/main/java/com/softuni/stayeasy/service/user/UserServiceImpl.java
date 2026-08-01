@@ -7,6 +7,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -63,5 +64,19 @@ public class UserServiceImpl implements UserService {
     public void updateUser(User user) {
         user.setUpdatedOn(LocalDateTime.now());
         userRepository.save(user);
+    }
+
+    @Override
+    public List<User> findAll() {
+        return userRepository.findAll();
+    }
+
+    @Override
+    public void changeRole(UUID userId, UserRole newRole) {
+        userRepository.findById(userId).ifPresent(user -> {
+            user.setRole(newRole);
+            user.setUpdatedOn(LocalDateTime.now());
+            userRepository.save(user);
+        });
     }
 }

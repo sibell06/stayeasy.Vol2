@@ -1,4 +1,4 @@
-package com.softuni.loyaltysvc.repositories;
+package com.softuni.loyaltysvc.repository;
 
 import com.softuni.loyaltysvc.model.LoyaltyAccount;
 import org.springframework.data.jpa.repository.JpaRepository;
