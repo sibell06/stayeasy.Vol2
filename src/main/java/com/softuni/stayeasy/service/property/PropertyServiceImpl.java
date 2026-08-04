@@ -6,6 +6,8 @@ import com.softuni.stayeasy.model.entity.user.User;
 import com.softuni.stayeasy.repository.property.PropertyRepository;
 import com.softuni.stayeasy.repository.reservation.ReservationRepository;
 import com.softuni.stayeasy.repository.review.ReviewRepository;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,6 +32,7 @@ public class PropertyServiceImpl implements PropertyService {
     }
 
     @Override
+    @CacheEvict(value = "availableProperties", allEntries = true)
     public void createProperty(Property property) {
         property.setCreatedOn(LocalDateTime.now());
         property.setUpdatedOn(LocalDateTime.now());
@@ -38,6 +41,7 @@ public class PropertyServiceImpl implements PropertyService {
     }
 
     @Override
+    @CacheEvict(value = "availableProperties", allEntries = true)
     public void updateProperty(Property property) {
         property.setUpdatedOn(LocalDateTime.now());
         propertyRepository.save(property);
@@ -45,6 +49,7 @@ public class PropertyServiceImpl implements PropertyService {
 
     @Override
     @Transactional
+    @CacheEvict(value = "availableProperties", allEntries = true)
     public void deleteProperty(UUID id) {
         Property property = propertyRepository.findById(id)
                 .orElseThrow(() -> new PropertyNotFoundException("Property with id " + id + " not found"));
@@ -66,6 +71,7 @@ public class PropertyServiceImpl implements PropertyService {
     }
 
     @Override
+    @Cacheable("availableProperties")
     public List<Property> findAllAvailable() {
         return propertyRepository.findAllByAvailableTrue();
     }
