@@ -1,11 +1,9 @@
 package com.softuni.loyaltysvc.model;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -21,9 +19,11 @@ public class LoyaltyAccount {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
+    @JdbcTypeCode(SqlTypes.CHAR)
     private UUID id;
 
     @Column(name = "user_id", nullable = false, unique = true)
+    @JdbcTypeCode(SqlTypes.CHAR)
     private UUID userId;
 
     @Column(name = "points_balance", nullable = false)
