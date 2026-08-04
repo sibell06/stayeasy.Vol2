@@ -41,6 +41,11 @@
             <p th:text="${profileUser.role}"></p>
         </div>
 
+        <div class="form-group" style="background:#fff8ec; border-radius:8px; padding:0.8rem 1rem;">
+            <label>Loyalty Points</label>
+            <p style="font-size:1.2rem; font-weight:600; color:#C9967A;" th:text="${pointsBalance}"></p>
+        </div>
+
         <a th:href="@{/profile/edit}" class="btn btn-primary" style="width:100%; text-align:center; display:block;">
             Edit Profile
         </a>

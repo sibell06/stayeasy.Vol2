@@ -1,5 +1,6 @@
 package com.softuni.stayeasy.web;
 
+import com.softuni.stayeasy.client.LoyaltyServiceClient;
 import com.softuni.stayeasy.model.dto.user.ProfileEditBindingModel;
 import com.softuni.stayeasy.model.entity.user.User;
 import com.softuni.stayeasy.security.UserPrincipal;
@@ -19,14 +20,26 @@ import org.springframework.web.bind.annotation.RequestMapping;
 public class ProfileController {
 
     private final UserService userService;
+    private final LoyaltyServiceClient loyaltyServiceClient;
 
-    public ProfileController(UserService userService) {
+    public ProfileController(UserService userService, LoyaltyServiceClient loyaltyServiceClient) {
         this.userService = userService;
+        this.loyaltyServiceClient = loyaltyServiceClient;
     }
 
     @GetMapping
     public String view(Model model, @AuthenticationPrincipal UserPrincipal principal) {
         model.addAttribute("profileUser", principal.getUser());
+
+        int pointsBalance = 0;
+        try {
+            Object balanceValue = loyaltyServiceClient.getBalance(principal.getId()).get("pointsBalance");
+            pointsBalance = balanceValue != null ? ((Number) balanceValue).intValue() : 0;
+        } catch (Exception ex) {
+            System.err.println("Failed to fetch loyalty balance: " + ex.getMessage());
+        }
+        model.addAttribute("pointsBalance", pointsBalance);
+
         return "profile/view";
     }
 
