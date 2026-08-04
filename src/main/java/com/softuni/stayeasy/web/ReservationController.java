@@ -1,5 +1,6 @@
 package com.softuni.stayeasy.web;
 
+import com.softuni.stayeasy.client.LoyaltyServiceClient;
 import com.softuni.stayeasy.model.dto.reservation.ReservationBindingModel;
 import com.softuni.stayeasy.model.entity.property.Property;
 import com.softuni.stayeasy.model.entity.reservation.Reservation;
@@ -26,11 +27,14 @@ public class ReservationController {
 
     private final ReservationService reservationService;
     private final PropertyService propertyService;
+    private final LoyaltyServiceClient loyaltyServiceClient;
 
     public ReservationController(ReservationService reservationService,
-                                 PropertyService propertyService) {
+                                 PropertyService propertyService,
+                                 LoyaltyServiceClient loyaltyServiceClient) {
         this.reservationService = reservationService;
         this.propertyService = propertyService;
+        this.loyaltyServiceClient = loyaltyServiceClient;
     }
 
     @GetMapping("/create/{propertyId}")
@@ -138,13 +142,23 @@ public class ReservationController {
             return "redirect:/reservations/host";
         }
 
-        boolean isOwner = reservationOpt.get().getProperty().getHost().getId().equals(principal.getId());
+        Reservation reservation = reservationOpt.get();
+        boolean isOwner = reservation.getProperty().getHost().getId().equals(principal.getId());
         boolean isAdmin = principal.getUser().getRole() == UserRole.ADMIN;
 
         if (!isOwner && !isAdmin) {
             return "redirect:/reservations/host";
         }
+
         reservationService.approveReservation(id);
+
+        try {
+            long nights = ChronoUnit.DAYS.between(reservation.getCheckIn(), reservation.getCheckOut());
+            loyaltyServiceClient.awardPoints(reservation.getRenter().getId(), (int) nights);
+        } catch (Exception ex) {
+            System.err.println("Failed to award loyalty points: " + ex.getMessage());
+        }
+
         return "redirect:/reservations/host";
     }
 
