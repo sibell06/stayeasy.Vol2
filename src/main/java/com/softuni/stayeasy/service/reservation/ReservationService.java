@@ -24,4 +24,8 @@ public interface ReservationService {
 
     List<Reservation> findAllByProperty(Property property);
 
+    int expireStalePendingReservations();
+
+    int completePastReservations();
+
 }

@@ -8,6 +8,7 @@ import com.softuni.stayeasy.model.entity.user.User;
 import com.softuni.stayeasy.repository.reservation.ReservationRepository;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -66,5 +67,30 @@ public class ReservationServiceImpl implements ReservationService {
     @Override
     public List<Reservation> findAllByProperty(Property property) {
         return reservationRepository.findAllByProperty(property);
+    }
+
+    @Override
+    public int expireStalePendingReservations() {
+        LocalDateTime cutoff = LocalDateTime.now().minusDays(7);
+        List<Reservation> staleReservations = reservationRepository.findAllByStatusAndCreatedBefore(ReservationStatus.PENDING, cutoff);
+
+        for (Reservation reservation : staleReservations) {
+            reservation.setStatus(ReservationStatus.EXPIRED);
+        }
+        reservationRepository.saveAll(staleReservations);
+
+        return staleReservations.size();
+    }
+
+    @Override
+    public int completePastReservations() {
+        List<Reservation> pastReservations = reservationRepository.findAllByStatusAndCheckOutBefore(ReservationStatus.APPROVED, LocalDate.now());
+
+        for (Reservation reservation : pastReservations) {
+            reservation.setStatus(ReservationStatus.COMPLETED);
+        }
+        reservationRepository.saveAll(pastReservations);
+
+        return pastReservations.size();
     }
 }

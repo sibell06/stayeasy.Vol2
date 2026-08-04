@@ -7,6 +7,8 @@ import com.softuni.stayeasy.model.entity.user.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -18,5 +20,9 @@ public interface ReservationRepository extends JpaRepository<Reservation, UUID> 
     List<Reservation> findAllByProperty(Property property);
 
     List<Reservation> findAllByPropertyAndStatus(Property property, ReservationStatus status);
+
+    List<Reservation> findAllByStatusAndCreatedBefore(ReservationStatus status, LocalDateTime cutoff);
+
+    List<Reservation> findAllByStatusAndCheckOutBefore(ReservationStatus status, LocalDate cutoff);
 
 }
