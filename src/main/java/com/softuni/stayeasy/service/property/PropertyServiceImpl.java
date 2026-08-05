@@ -6,6 +6,8 @@ import com.softuni.stayeasy.model.entity.user.User;
 import com.softuni.stayeasy.repository.property.PropertyRepository;
 import com.softuni.stayeasy.repository.reservation.ReservationRepository;
 import com.softuni.stayeasy.repository.review.ReviewRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
@@ -18,6 +20,8 @@ import java.util.UUID;
 
 @Service
 public class PropertyServiceImpl implements PropertyService {
+
+    private static final Logger logger = LoggerFactory.getLogger(PropertyServiceImpl.class);
 
     private final PropertyRepository propertyRepository;
     private final ReviewRepository reviewRepository;
@@ -38,6 +42,7 @@ public class PropertyServiceImpl implements PropertyService {
         property.setUpdatedOn(LocalDateTime.now());
         property.setAvailable(true);
         propertyRepository.save(property);
+        logger.info("Property '{}' created by host {}", property.getTitle(), property.getHost().getId());
     }
 
     @Override
@@ -45,6 +50,7 @@ public class PropertyServiceImpl implements PropertyService {
     public void updateProperty(Property property) {
         property.setUpdatedOn(LocalDateTime.now());
         propertyRepository.save(property);
+        logger.info("Property {} updated", property.getId());
     }
 
     @Override
@@ -57,6 +63,7 @@ public class PropertyServiceImpl implements PropertyService {
         reviewRepository.deleteAll(reviewRepository.findAllByProperty(property));
         reservationRepository.deleteAll(reservationRepository.findAllByProperty(property));
         propertyRepository.delete(property);
+        logger.info("Property {} deleted, along with its reviews and reservations", id);
     }
 
     @Override

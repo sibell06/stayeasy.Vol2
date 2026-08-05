@@ -3,6 +3,8 @@ package com.softuni.stayeasy.service.user;
 import com.softuni.stayeasy.model.entity.user.User;
 import com.softuni.stayeasy.model.entity.user.UserRole;
 import com.softuni.stayeasy.repository.user.UserRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -13,6 +15,8 @@ import java.util.UUID;
 
 @Service
 public class UserServiceImpl implements UserService {
+
+    private static final Logger logger = LoggerFactory.getLogger(UserServiceImpl.class);
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
@@ -38,6 +42,7 @@ public class UserServiceImpl implements UserService {
                 .build();
 
         userRepository.save(user);
+        logger.info("New user registered: {}", username);
     }
 
     @Override
@@ -64,6 +69,7 @@ public class UserServiceImpl implements UserService {
     public void updateUser(User user) {
         user.setUpdatedOn(LocalDateTime.now());
         userRepository.save(user);
+        logger.info("User {} updated their profile", user.getId());
     }
 
     @Override
@@ -77,6 +83,7 @@ public class UserServiceImpl implements UserService {
             user.setRole(newRole);
             user.setUpdatedOn(LocalDateTime.now());
             userRepository.save(user);
+            logger.info("User {} role changed to {}", userId, newRole);
         });
     }
 }

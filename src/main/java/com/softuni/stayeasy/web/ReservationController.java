@@ -11,6 +11,8 @@ import com.softuni.stayeasy.security.UserPrincipal;
 import com.softuni.stayeasy.service.property.PropertyService;
 import com.softuni.stayeasy.service.reservation.ReservationService;
 import jakarta.validation.Valid;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -26,6 +28,8 @@ import java.util.UUID;
 @Controller
 @RequestMapping("/reservations")
 public class ReservationController {
+
+    private static final Logger logger = LoggerFactory.getLogger(ReservationController.class);
 
     private final ReservationService reservationService;
     private final PropertyService propertyService;
@@ -54,7 +58,7 @@ public class ReservationController {
             Object balanceValue = loyaltyServiceClient.getBalance(principal.getId()).get("pointsBalance");
             pointsBalance = balanceValue != null ? ((Number) balanceValue).intValue() : 0;
         } catch (Exception ex) {
-            System.err.println("Failed to fetch loyalty balance: " + ex.getMessage());
+            logger.warn("Failed to fetch loyalty balance for user {}: {}", principal.getId(), ex.getMessage());
         }
         model.addAttribute("pointsBalance", pointsBalance);
 
@@ -109,9 +113,11 @@ public class ReservationController {
                 if (discountValue != null) {
                     BigDecimal discount = BigDecimal.valueOf(((Number) discountValue).doubleValue());
                     totalPrice = totalPrice.subtract(discount).max(BigDecimal.ZERO);
+                    logger.info("User {} redeemed {} points for a ${} discount on property {}",
+                            principal.getId(), pointsToRedeem, discount, propertyId);
                 }
             } catch (Exception ex) {
-                System.err.println("Failed to redeem loyalty points: " + ex.getMessage());
+                logger.warn("Failed to redeem loyalty points for user {}: {}", principal.getId(), ex.getMessage());
             }
         }
 
@@ -125,6 +131,9 @@ public class ReservationController {
                 .build();
 
         reservationService.createReservation(reservation);
+        logger.info("User {} created a reservation for property {} ({} to {})",
+                principal.getId(), propertyId, reservationData.getCheckIn(), reservationData.getCheckOut());
+
         return "redirect:/reservations/my";
     }
 
@@ -148,6 +157,7 @@ public class ReservationController {
             return "redirect:/reservations/my";
         }
         reservationService.cancelReservation(id);
+        logger.info("User {} cancelled reservation {}", principal.getId(), id);
         return "redirect:/reservations/my";
     }
 
@@ -178,13 +188,15 @@ public class ReservationController {
         }
 
         reservationService.approveReservation(id);
+        logger.info("Host {} approved reservation {}", principal.getId(), id);
 
         try {
             long nights = ChronoUnit.DAYS.between(reservation.getCheckIn(), reservation.getCheckOut());
             AwardPointsRequest awardRequest = new AwardPointsRequest(reservation.getRenter().getId(), (int) nights);
             loyaltyServiceClient.awardPoints(awardRequest);
+            logger.info("Awarded loyalty points to renter {} for {} night(s)", reservation.getRenter().getId(), nights);
         } catch (Exception ex) {
-            System.err.println("Failed to award loyalty points: " + ex.getMessage());
+            logger.warn("Failed to award loyalty points for reservation {}: {}", id, ex.getMessage());
         }
 
         return "redirect:/reservations/host";
@@ -204,6 +216,7 @@ public class ReservationController {
             return "redirect:/reservations/host";
         }
         reservationService.rejectReservation(id);
+        logger.info("Host {} rejected reservation {}", principal.getId(), id);
         return "redirect:/reservations/host";
     }
 }

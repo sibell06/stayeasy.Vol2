@@ -1,11 +1,15 @@
 package com.softuni.stayeasy.scheduling;
 
 import com.softuni.stayeasy.service.reservation.ReservationService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 @Component
 public class ReservationScheduler {
+
+    private static final Logger logger = LoggerFactory.getLogger(ReservationScheduler.class);
 
     private final ReservationService reservationService;
 
@@ -16,12 +20,12 @@ public class ReservationScheduler {
     @Scheduled(cron = "0 0 2 * * *")
     public void expireStalePendingReservations() {
         int expiredCount = reservationService.expireStalePendingReservations();
-        System.out.println("Scheduled job: expired " + expiredCount + " stale pending reservations.");
+        logger.info("Scheduled job: expired {} stale pending reservations.", expiredCount);
     }
 
     @Scheduled(fixedRate = 60000)
     public void completePastReservations() {
         int completedCount = reservationService.completePastReservations();
-        System.out.println("Scheduled job: marked " + completedCount + " reservations as completed.");
+        logger.info("Scheduled job: marked {} reservations as completed.", completedCount);
     }
 }
