@@ -38,13 +38,24 @@ public class ReservationController {
     }
 
     @GetMapping("/create/{propertyId}")
-    public String createPage(@PathVariable UUID propertyId, Model model) {
+    public String createPage(@PathVariable UUID propertyId, Model model,
+                             @AuthenticationPrincipal UserPrincipal principal) {
         Optional<Property> propertyOpt = propertyService.findById(propertyId);
         if (propertyOpt.isEmpty()) {
             return "redirect:/properties";
         }
         model.addAttribute("property", propertyOpt.get());
         model.addAttribute("reservationData", new ReservationBindingModel());
+
+        int pointsBalance = 0;
+        try {
+            Object balanceValue = loyaltyServiceClient.getBalance(principal.getId()).get("pointsBalance");
+            pointsBalance = balanceValue != null ? ((Number) balanceValue).intValue() : 0;
+        } catch (Exception ex) {
+            System.err.println("Failed to fetch loyalty balance: " + ex.getMessage());
+        }
+        model.addAttribute("pointsBalance", pointsBalance);
+
         return "reservation/create";
     }
 
@@ -52,6 +63,7 @@ public class ReservationController {
     public String create(@PathVariable UUID propertyId,
                          @Valid @ModelAttribute("reservationData") ReservationBindingModel reservationData,
                          BindingResult bindingResult,
+                         @RequestParam(value = "pointsToRedeem", defaultValue = "0") int pointsToRedeem,
                          Model model,
                          @AuthenticationPrincipal UserPrincipal principal) {
 
@@ -87,6 +99,18 @@ public class ReservationController {
 
         long nights = ChronoUnit.DAYS.between(reservationData.getCheckIn(), reservationData.getCheckOut());
         BigDecimal totalPrice = property.getPricePerNight().multiply(BigDecimal.valueOf(nights));
+
+        if (pointsToRedeem > 0) {
+            try {
+                Object discountValue = loyaltyServiceClient.redeemPoints(principal.getId(), pointsToRedeem).get("discountAmount");
+                if (discountValue != null) {
+                    BigDecimal discount = BigDecimal.valueOf(((Number) discountValue).doubleValue());
+                    totalPrice = totalPrice.subtract(discount).max(BigDecimal.ZERO);
+                }
+            } catch (Exception ex) {
+                System.err.println("Failed to redeem loyalty points: " + ex.getMessage());
+            }
+        }
 
         Reservation reservation = Reservation.builder()
                 .checkIn(reservationData.getCheckIn())

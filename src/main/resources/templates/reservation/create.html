@@ -12,7 +12,6 @@
 
         <h1>Book This Property</h1>
 
-        <!-- Property summary -->
         <div style="background:#f0f4ff; border-radius:8px; padding:1rem; margin-bottom:1.5rem;">
             <h3 th:text="${property.title}" style="margin-bottom:0.3rem;"></h3>
             <p style="color:#888; font-size:0.9rem;"> <span th:text="${property.location}"></span></p>
@@ -23,7 +22,6 @@
             </p>
         </div>
 
-        <!-- Errors -->
         <div class="alert alert-error" th:if="${pastDateError}">
             Check-in date cannot be in the past.
         </div>
@@ -54,6 +52,18 @@
                 <input type="number" id="guests" th:field="*{guests}" min="1"
                        th:max="${property.maxGuest}" placeholder="e.g. 2"/>
                 <span class="field-error" th:if="${#fields.hasErrors('guests')}" th:errors="*{guests}"></span>
+            </div>
+
+            <div class="form-group" th:if="${pointsBalance > 0}"
+                 style="background:#fff8ec; border-radius:8px; padding:1rem; margin-top:0.5rem;">
+                <label for="pointsToRedeem">
+                    Redeem Loyalty Points (you have <strong th:text="${pointsBalance}"></strong> points available)
+                </label>
+                <input type="number" id="pointsToRedeem" name="pointsToRedeem" min="0" th:max="${pointsBalance}"
+                       step="10" value="0" placeholder="e.g. 100"/>
+                <p style="font-size:0.82rem; color:#888; margin-top:0.3rem;">
+                    Every 100 points = $10 off your total.
+                </p>
             </div>
 
             <div style="display:flex; gap:1rem; margin-top:1rem;">
