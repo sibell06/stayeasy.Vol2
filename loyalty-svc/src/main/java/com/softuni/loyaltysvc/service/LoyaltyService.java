@@ -5,6 +5,8 @@ import com.softuni.loyaltysvc.model.LoyaltyAccount;
 import com.softuni.loyaltysvc.model.PointsTransaction;
 import com.softuni.loyaltysvc.repository.LoyaltyAccountRepository;
 import com.softuni.loyaltysvc.repository.PointsTransactionRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -13,6 +15,8 @@ import java.util.UUID;
 
 @Service
 public class LoyaltyService {
+
+    private static final Logger logger = LoggerFactory.getLogger(LoyaltyService.class);
 
     private static final int POINTS_PER_NIGHT = 10;
     private static final int POINTS_PER_DOLLAR_DISCOUNT = 10;
@@ -47,6 +51,9 @@ public class LoyaltyService {
                 .build();
         pointsTransactionRepository.save(transaction);
 
+        logger.info("Awarded {} points to user {} for {} night(s). New balance: {}",
+                pointsEarned, userId, nights, account.getPointsBalance());
+
         return account.getPointsBalance();
     }
 
@@ -55,6 +62,8 @@ public class LoyaltyService {
         LoyaltyAccount account = getOrCreateAccount(userId);
 
         if (pointsToRedeem > account.getPointsBalance()) {
+            logger.warn("User {} attempted to redeem {} points but only has {}",
+                    userId, pointsToRedeem, account.getPointsBalance());
             throw new InsufficientPointsException(
                     "Cannot redeem " + pointsToRedeem + " points; account balance is only " + account.getPointsBalance());
         }
@@ -70,6 +79,9 @@ public class LoyaltyService {
                 .createdOn(LocalDateTime.now())
                 .build();
         pointsTransactionRepository.save(transaction);
+
+        logger.info("User {} redeemed {} points for a ${} discount. New balance: {}",
+                userId, pointsToRedeem, (double) pointsToRedeem / POINTS_PER_DOLLAR_DISCOUNT, account.getPointsBalance());
 
         return (double) pointsToRedeem / POINTS_PER_DOLLAR_DISCOUNT;
     }
