@@ -1,10 +1,12 @@
 package com.softuni.stayeasy.client;
 
+import com.softuni.stayeasy.model.dto.loyalty.AwardPointsRequest;
+import com.softuni.stayeasy.model.dto.loyalty.RedeemPointsRequest;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.Map;
 import java.util.UUID;
@@ -16,8 +18,8 @@ public interface LoyaltyServiceClient {
     Map<String, Object> getBalance(@PathVariable("userId") UUID userId);
 
     @PostMapping("/api/loyalty/award")
-    Map<String, Object> awardPoints(@RequestParam("userId") UUID userId, @RequestParam("nights") int nights);
+    Map<String, Object> awardPoints(@RequestBody AwardPointsRequest request);
 
     @PostMapping("/api/loyalty/redeem")
-    Map<String, Object> redeemPoints(@RequestParam("userId") UUID userId, @RequestParam("points") int points);
+    Map<String, Object> redeemPoints(@RequestBody RedeemPointsRequest request);
 }

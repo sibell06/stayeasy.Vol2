@@ -1,6 +1,8 @@
 package com.softuni.stayeasy.web;
 
 import com.softuni.stayeasy.client.LoyaltyServiceClient;
+import com.softuni.stayeasy.model.dto.loyalty.AwardPointsRequest;
+import com.softuni.stayeasy.model.dto.loyalty.RedeemPointsRequest;
 import com.softuni.stayeasy.model.dto.reservation.ReservationBindingModel;
 import com.softuni.stayeasy.model.entity.property.Property;
 import com.softuni.stayeasy.model.entity.reservation.Reservation;
@@ -102,7 +104,8 @@ public class ReservationController {
 
         if (pointsToRedeem > 0) {
             try {
-                Object discountValue = loyaltyServiceClient.redeemPoints(principal.getId(), pointsToRedeem).get("discountAmount");
+                RedeemPointsRequest redeemRequest = new RedeemPointsRequest(principal.getId(), pointsToRedeem);
+                Object discountValue = loyaltyServiceClient.redeemPoints(redeemRequest).get("discountAmount");
                 if (discountValue != null) {
                     BigDecimal discount = BigDecimal.valueOf(((Number) discountValue).doubleValue());
                     totalPrice = totalPrice.subtract(discount).max(BigDecimal.ZERO);
@@ -178,7 +181,8 @@ public class ReservationController {
 
         try {
             long nights = ChronoUnit.DAYS.between(reservation.getCheckIn(), reservation.getCheckOut());
-            loyaltyServiceClient.awardPoints(reservation.getRenter().getId(), (int) nights);
+            AwardPointsRequest awardRequest = new AwardPointsRequest(reservation.getRenter().getId(), (int) nights);
+            loyaltyServiceClient.awardPoints(awardRequest);
         } catch (Exception ex) {
             System.err.println("Failed to award loyalty points: " + ex.getMessage());
         }
