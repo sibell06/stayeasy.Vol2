@@ -1,5 +1,6 @@
 package com.softuni.loyaltysvc.service;
 
+import com.softuni.loyaltysvc.exception.InsufficientPointsException;
 import com.softuni.loyaltysvc.model.LoyaltyAccount;
 import com.softuni.loyaltysvc.model.PointsTransaction;
 import com.softuni.loyaltysvc.repository.LoyaltyAccountRepository;
@@ -53,8 +54,9 @@ public class LoyaltyService {
     public double redeemPoints(UUID userId, int pointsToRedeem) {
         LoyaltyAccount account = getOrCreateAccount(userId);
 
-        if (pointsToRedeem <= 0 || pointsToRedeem > account.getPointsBalance()) {
-            throw new IllegalArgumentException("Invalid points amount to redeem");
+        if (pointsToRedeem > account.getPointsBalance()) {
+            throw new InsufficientPointsException(
+                    "Cannot redeem " + pointsToRedeem + " points; account balance is only " + account.getPointsBalance());
         }
 
         account.setPointsBalance(account.getPointsBalance() - pointsToRedeem);
