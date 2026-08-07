@@ -13,6 +13,14 @@ public class AwardPointsRequest {
     @Min(value = 1, message = "Nights must be at least 1")
     private int nights;
 
+    public AwardPointsRequest() {
+    }
+
+    public AwardPointsRequest(UUID userId, int nights) {
+        this.userId = userId;
+        this.nights = nights;
+    }
+
     public UUID getUserId() {
         return userId;
     }

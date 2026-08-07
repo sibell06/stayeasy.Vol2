@@ -13,6 +13,14 @@ public class RedeemPointsRequest {
     @Min(value = 1, message = "Points must be at least 1")
     private int points;
 
+    public RedeemPointsRequest() {
+    }
+
+    public RedeemPointsRequest(UUID userId, int points) {
+        this.userId = userId;
+        this.points = points;
+    }
+
     public UUID getUserId() {
         return userId;
     }
