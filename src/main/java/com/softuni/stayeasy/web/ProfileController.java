@@ -6,6 +6,8 @@ import com.softuni.stayeasy.model.entity.user.User;
 import com.softuni.stayeasy.security.UserPrincipal;
 import com.softuni.stayeasy.service.user.UserService;
 import jakarta.validation.Valid;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -18,6 +20,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @Controller
 @RequestMapping("/profile")
 public class ProfileController {
+
+    private static final Logger logger = LoggerFactory.getLogger(ProfileController.class);
 
     private final UserService userService;
     private final LoyaltyServiceClient loyaltyServiceClient;
@@ -36,7 +40,7 @@ public class ProfileController {
             Object balanceValue = loyaltyServiceClient.getBalance(principal.getId()).get("pointsBalance");
             pointsBalance = balanceValue != null ? ((Number) balanceValue).intValue() : 0;
         } catch (Exception ex) {
-            System.err.println("Failed to fetch loyalty balance: " + ex.getMessage());
+            logger.warn("Failed to fetch loyalty balance for user {}: {}", principal.getId(), ex.getMessage());
         }
         model.addAttribute("pointsBalance", pointsBalance);
 
