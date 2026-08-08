@@ -40,7 +40,7 @@ public class SecurityConfiguration {
                         .requestMatchers("/properties/{id}/edit", "/properties/{id}/delete").hasAnyRole("HOST", "ADMIN")
                         .requestMatchers("/reservations/create/**").hasRole("RENTER")
                         .requestMatchers("/reservations/host", "/reservations/{id}/approve", "/reservations/{id}/reject").hasAnyRole("HOST", "ADMIN")
-                        .requestMatchers(HttpMethod.GET, "/", "/about", "/properties", "/properties/{id}").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/", "/about", "/properties", "/properties/{id}", "/access-denied").permitAll()
                         .requestMatchers("/auth/register", "/auth/login").permitAll()
                         .requestMatchers("/css/**", "/js/**", "/images/**").permitAll()
                         .anyRequest().authenticated()
