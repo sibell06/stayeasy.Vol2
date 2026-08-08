@@ -9,6 +9,7 @@ import java.time.LocalDate;
 public class ReservationBindingModel {
 
     @NotNull(message = "Check-in date is required")
+    @Future(message = "Check-in date must be in the future")
     private LocalDate checkIn;
 
     @NotNull(message = "Check-out date is required")

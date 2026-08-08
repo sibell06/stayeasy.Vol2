@@ -97,7 +97,7 @@ class ReservationControllerTest {
     }
 
     @Test
-    void create_pastCheckInDate_returnsCreateViewWithError() throws Exception {
+    void create_pastCheckInDate_returnsCreateViewWithValidationError() throws Exception {
         setUpUsers();
         when(propertyService.findById(property.getId())).thenReturn(Optional.of(property));
 
@@ -109,7 +109,7 @@ class ReservationControllerTest {
                         .param("guests", "2"))
                 .andExpect(status().isOk())
                 .andExpect(view().name("reservation/create"))
-                .andExpect(model().attribute("pastDateError", true));
+                .andExpect(model().attributeHasFieldErrors("reservationData", "checkIn"));
     }
 
     @Test
